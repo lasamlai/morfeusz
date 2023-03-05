@@ -97,6 +97,11 @@ static foreign_t pl_morfeusz_analyse(term_t st, term_t at) {
   PL_fail;
 }
 
+static foreign_t pl_dict_id(term_t namet) {
+  std::string name = m_instance->getDictID();
+  return PL_unify_atom_chars(namet, name.c_str());
+}
+
 extern "C" {
   install_t install() { 
     m_instance=Morfeusz::createInstance();
@@ -104,6 +109,7 @@ extern "C" {
     F_interp = PL_new_functor(PL_new_atom("i"), 5);
     F_colon = PL_new_functor(PL_new_atom(":"), 2);
     PL_register_foreign("morfeusz_analyse", 2, (pl_function_t)pl_morfeusz_analyse, 0);
+    PL_register_foreign("dict_id", 1, (pl_function_t)pl_dict_id, 0);
   }
 }
 

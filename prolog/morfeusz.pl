@@ -4,7 +4,8 @@
 % This file is in the public domain.
 :- module(morfeusz, [
 	      morfeusz/4,
-	      morfeusz_analyse/2
+	      morfeusz_analyse/2,
+	      dict_id/1
 	  ]).
 
 % this defines morfeusz_analyse/2:
