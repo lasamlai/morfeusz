@@ -107,7 +107,7 @@ static foreign_t unify_MorphInterpretation(MorphInterpretation &i, term_t t) {
   return PL_unify_term(t,
 			PL_FUNCTOR,		F_MorphInterpretation,
 			PL_UTF8_STRING,	i.orth.c_str(),
-			PL_CHARS,		i.lemma.c_str(),
+			PL_UTF8_STRING,	i.lemma.c_str(),
 			PL_CHARS,		i.getTag(*m_instance).c_str(),
 			PL_CHARS,		i.getName(*m_instance).c_str(),
 			PL_CHARS,       i.getLabelsAsString(*m_instance).c_str());
@@ -138,9 +138,24 @@ static foreign_t pl_generate(term_t lemmat, term_t orths_t) {
   return unify_MorphInterpretations(r, orths_t);
 }
 
+static foreign_t pl_change_instance(term_t namet) {
+  char *name;
+  if (!PL_get_chars(namet, &name,
+                    CVT_ATOM | CVT_STRING | CVT_LIST | CVT_EXCEPTION |
+                        BUF_DISCARDABLE | REP_UTF8)) {
+    PL_fail;
+  }
+  delete m_instance;
+  m_instance = Morfeusz::createInstance(name);
+  m_instance->setCharset(UTF8);
+  PL_succeed;
+}
+
 extern "C" {
   install_t install() { 
-    m_instance=Morfeusz::createInstance();
+    Morfeusz::dictionarySearchPaths.push_front(
+        "/usr/share/morfeusz2/dictionaries");
+    m_instance = Morfeusz::createInstance();
     m_instance->setCharset(UTF8);
     F_interp = PL_new_functor(PL_new_atom("i"), 5);
     F_colon = PL_new_functor(PL_new_atom(":"), 2);
@@ -148,6 +163,7 @@ extern "C" {
       PL_new_functor(PL_new_atom("morph_interpretation"), 5);
     PL_register_foreign("morfeusz_analyse", 2, (pl_function_t)pl_morfeusz_analyse, 0);
     PL_register_foreign("dict_id", 1, (pl_function_t)pl_dict_id, 0);
+    PL_register_foreign("change_instance", 1, (pl_function_t)pl_change_instance, 0);
     PL_register_foreign("generate", 2, (pl_function_t)pl_generate, 0);
   }
 }

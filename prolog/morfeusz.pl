@@ -5,7 +5,9 @@
 :- module(morfeusz, [
 	      morfeusz/4,
 	      morfeusz_analyse/2,
-	      dict_id/1
+	      dict_id/1,
+	      change_instance/1,
+	      generate/2
 	  ]).
 
 % this defines morfeusz_analyse/2:
