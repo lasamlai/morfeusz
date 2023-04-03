@@ -1,5 +1,12 @@
 :- use_module(library(morfeusz)).
 
+:- begin_tests(morfeusz_exception).
+
+test(morfeusz_exception, [throws(morfeusz_exception(_))]) :-
+    change_instance("non-existent dictionary").
+
+:- end_tests(morfeusz_exception).
+
 :- begin_tests(zażółć_gęślą_jaźń).
 
 :- if(dict_id('')).

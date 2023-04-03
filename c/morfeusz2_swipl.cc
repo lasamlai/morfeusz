@@ -42,6 +42,7 @@ using namespace morfeusz;
 static functor_t F_interp;
 static functor_t F_colon;
 static functor_t F_MorphInterpretation;
+static functor_t F_MorfeuszException;
 static Morfeusz *m_instance;
 
 //extern "C" 
@@ -145,8 +146,19 @@ static foreign_t pl_change_instance(term_t namet) {
                         BUF_DISCARDABLE | REP_UTF8)) {
     PL_fail;
   }
+  Morfeusz *m = NULL;
+  try {
+    m = Morfeusz::createInstance(name);
+  } catch (morfeusz::MorfeuszException e) {
+	term_t except;
+	return ( (except = PL_new_term_ref()) &&
+			 (PL_unify_term(except,
+							PL_FUNCTOR,	F_MorfeuszException,
+							PL_UTF8_STRING, e.what())) &&
+			 (PL_raise_exception(except)) );
+  }
   delete m_instance;
-  m_instance = Morfeusz::createInstance(name);
+  m_instance = m;
   m_instance->setCharset(UTF8);
   PL_succeed;
 }
@@ -161,6 +173,8 @@ extern "C" {
     F_colon = PL_new_functor(PL_new_atom(":"), 2);
     F_MorphInterpretation =
       PL_new_functor(PL_new_atom("morph_interpretation"), 5);
+    F_MorfeuszException =
+      PL_new_functor(PL_new_atom("morfeusz_exception"), 1);
     PL_register_foreign("morfeusz_analyse", 2, (pl_function_t)pl_morfeusz_analyse, 0);
     PL_register_foreign("dict_id", 1, (pl_function_t)pl_dict_id, 0);
     PL_register_foreign("change_instance", 1, (pl_function_t)pl_change_instance, 0);
