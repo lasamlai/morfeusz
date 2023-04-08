@@ -110,7 +110,7 @@ static foreign_t unify_MorphInterpretation(MorphInterpretation &i, term_t t) {
 			PL_UTF8_STRING,	i.orth.c_str(),
 			PL_UTF8_STRING,	i.lemma.c_str(),
 			PL_CHARS,		i.getTag(*m_instance).c_str(),
-			PL_CHARS,		i.getName(*m_instance).c_str(),
+			PL_UTF8_CHARS,	i.getName(*m_instance).c_str(),
 			PL_CHARS,       i.getLabelsAsString(*m_instance).c_str());
 }
 
