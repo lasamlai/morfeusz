@@ -125,6 +125,15 @@ static foreign_t unify_MorphInterpretations(std::vector<MorphInterpretation> &r,
   return PL_unify_nil(tail);
 }
 
+static foreign_t MorfeuszException_throw(morfeusz::MorfeuszException e) {
+  term_t except;
+  return ( (except = PL_new_term_ref()) &&
+		   (PL_unify_term(except,
+						  PL_FUNCTOR,	F_MorfeuszException,
+						  PL_UTF8_STRING, e.what())) &&
+		   (PL_raise_exception(except)) );
+}
+
 static foreign_t pl_generate(term_t lemmat, term_t orths_t) {
   char *lemma;
   if (!PL_get_chars(lemmat, &lemma,
@@ -134,8 +143,11 @@ static foreign_t pl_generate(term_t lemmat, term_t orths_t) {
   }
 
   std::vector<MorphInterpretation> r;
-  m_instance->generate(lemma, r);
-
+  try {
+    m_instance->generate(lemma, r);
+  } catch (morfeusz::MorfeuszException e) {
+    return MorfeuszException_throw(e);
+  }
   return unify_MorphInterpretations(r, orths_t);
 }
 
@@ -150,12 +162,7 @@ static foreign_t pl_change_instance(term_t namet) {
   try {
     m = Morfeusz::createInstance(name);
   } catch (morfeusz::MorfeuszException e) {
-	term_t except;
-	return ( (except = PL_new_term_ref()) &&
-			 (PL_unify_term(except,
-							PL_FUNCTOR,	F_MorfeuszException,
-							PL_UTF8_STRING, e.what())) &&
-			 (PL_raise_exception(except)) );
+    return MorfeuszException_throw(e);
   }
   delete m_instance;
   m_instance = m;
