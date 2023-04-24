@@ -151,6 +151,20 @@ static foreign_t pl_generate(term_t lemmat, term_t orths_t) {
   return unify_MorphInterpretations(r, orths_t);
 }
 
+static void change_instance(char *name) {
+  Morfeusz *m = NULL;
+  if (name == NULL) {
+    m = Morfeusz::createInstance();
+  } else {
+    m = Morfeusz::createInstance(name);
+  }
+  if (m_instance != NULL) {
+    delete m_instance;
+  }
+  m_instance = m;
+  m_instance->setCharset(UTF8);
+}
+
 static foreign_t pl_change_instance(term_t namet) {
   char *name;
   if (!PL_get_chars(namet, &name,
@@ -158,15 +172,11 @@ static foreign_t pl_change_instance(term_t namet) {
                         BUF_DISCARDABLE | REP_UTF8)) {
     PL_fail;
   }
-  Morfeusz *m = NULL;
   try {
-    m = Morfeusz::createInstance(name);
+    change_instance(name);
   } catch (morfeusz::MorfeuszException e) {
     return MorfeuszException_throw(e);
   }
-  delete m_instance;
-  m_instance = m;
-  m_instance->setCharset(UTF8);
   PL_succeed;
 }
 
@@ -174,8 +184,7 @@ extern "C" {
   install_t install() { 
     Morfeusz::dictionarySearchPaths.push_front(
         "/usr/share/morfeusz2/dictionaries");
-    m_instance = Morfeusz::createInstance();
-    m_instance->setCharset(UTF8);
+    change_instance(NULL);
     F_interp = PL_new_functor(PL_new_atom("i"), 5);
     F_colon = PL_new_functor(PL_new_atom(":"), 2);
     F_MorphInterpretation =
