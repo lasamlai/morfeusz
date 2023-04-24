@@ -180,6 +180,22 @@ static foreign_t pl_change_instance(term_t namet) {
   PL_succeed;
 }
 
+static foreign_t pl_set_praet(term_t namet) {
+  char *name;
+  if (!PL_get_chars(namet, &name,
+                    CVT_ATOM | CVT_STRING | CVT_LIST | CVT_EXCEPTION |
+                        BUF_DISCARDABLE | REP_UTF8)) {
+    PL_fail;
+  }
+  try {
+    m_instance->setPraet(name);
+  } catch (morfeusz::MorfeuszException e) {
+    return MorfeuszException_throw(e);
+  }
+  PL_succeed;
+
+}
+
 extern "C" {
   install_t install() { 
     Morfeusz::dictionarySearchPaths.push_front(
@@ -193,6 +209,7 @@ extern "C" {
       PL_new_functor(PL_new_atom("morfeusz_exception"), 1);
     PL_register_foreign("morfeusz_analyse", 2, (pl_function_t)pl_morfeusz_analyse, 0);
     PL_register_foreign("dict_id", 1, (pl_function_t)pl_dict_id, 0);
+    PL_register_foreign("set_praet", 1, (pl_function_t)pl_set_praet, 0);
     PL_register_foreign("change_instance", 1, (pl_function_t)pl_change_instance, 0);
     PL_register_foreign("generate", 2, (pl_function_t)pl_generate, 0);
   }

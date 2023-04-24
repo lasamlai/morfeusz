@@ -6,6 +6,7 @@
 	      morfeusz/4,
 	      morfeusz_analyse/2,
 	      dict_id/1,
+	      set_praet/1,
 	      change_instance/1,
 	      generate/2
 	  ]).
